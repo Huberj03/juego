@@ -1,0 +1,238 @@
+@model IEnumerable<juego.Models.Jugador>
+<head>
+    <title> Piedra, Papel o Tijeras</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .nombreJugador {
+            margin-top: 0;
+            font-size: 24px;
+            text-align: center;
+        }
+        .card {
+            margin-top: 20px;
+        }
+        #inicioJuego {
+            display: none;
+            text-align: center;
+        }
+        #resultadoJuego {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        form {
+            margin-top: 20px;
+        }
+        #btnContainer {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Piedra, Papel o Tijeras</h1>
+        <div>
+            <table id="jugadores" class="table">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null)
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@Html.DisplayFor(modelItem => item.Nombre)</td>
+                                <td><a asp-action="Edit" asp-route-id="@item.IdJugador">Cambiar Jugador</a></td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="2">No hay jugadores disponibles</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div id="inicioJuego">
+            <div class="card" style="display:inline-block; width:45%;">
+                <div class="card-body">
+                    <h4 id="nombreJugador1" class="nombreJugador" data-nombre="Nombre1">Nombre1</h4>
+                    <h4 id="puntajeJugador1">Puntaje: 0</h4>
+                    <form id="formJugada1" method="post">
+                        <input type="hidden" name="idJugador" id="idJugador1" />
+                        <div>
+                            <label for="jugada1">Elegir jugada:</label>
+                            <select id="jugada1" name="jugada1">
+                                <option value="Piedra">Piedra</option>
+                                <option value="Papel">Papel</option>
+                                <option value="Tijeras">Tijeras</option>
+                            </select>
+                        </div>
+                        <div>
+                            <input type="submit" value="Jugar" class="btn btn-primary" />
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="card" style="display:inline-block; width:45%;">
+                <div class="card-body">
+                    <h4 id="nombreJugador2" class="nombreJugador" data-nombre="Nombre2">Nombre2</h4>
+                    <h4 id="puntajeJugador2">Puntaje: 0</h4>
+                    <form id="formJugada2" method="post">
+                        <input type="hidden" name="idJugador" id="idJugador2" />
+                        <div>
+                            <label for="jugada2">Elegir jugada:</label>
+                            <select id="jugada2" name="jugada2">
+                                <option value="Piedra">Piedra</option>
+                                <option value="Papel">Papel</option>
+                                <option value="Tijeras">Tijeras</option>
+                            </select>
+                        </div>
+                        <div>
+                            <input type="submit" value="Jugar" class="btn btn-primary" />
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div id="resultadoJuego">
+            <h4 id="nombreGanador"></h4>
+        </div>
+        <div id="btnContainer">
+            <a id="btnIniciarJuego" class="btn btn-primary">Iniciar Partida</a>
+            <a id="btnReiniciarJuego" class="btn btn-secondary">Reiniciar Partida</a>
+        </div>
+    </div>
+ </body>
+
+
+
+
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    
+var victoriasJugador1 = 0;
+var victoriasJugador2 = 0;
+var juegoReiniciado = false;
+var jugador1RealizoJugada = false;
+
+//ult undo
+
+   $('#btnIniciarJuego').click(function () {
+    $('#inicioJuego').show();
+    $('#formJugada1').show();
+    $('#formJugada2').show();
+    nombreJugador1 = $('#jugadores tbody tr:first-child td:first-child').text();
+    nombreJugador2 = $('#jugadores tbody tr:nth-child(2) td:first-child').text();
+    $('#nombreJugador1').text(nombreJugador1);
+    $('#nombreJugador2').text(nombreJugador2);
+    $('#nombreJugador1').show(); // Mostrar el nombre del primer jugador
+    $('#nombreJugador2').show(); // Ocultar el nombre del segundo jugador
+    $('#nombreGanador').text(''); // Ocultar mensaje de empate
+    jugador1RealizoJugada = false; // Reiniciar variable cuando se inicia un nuevo juego
+    $('#btnJugar2').prop('disabled', true); // Deshabilitar botón Jugar del jugador 2
+});
+
+
+  $('#formJugada1').submit(function (event) {
+    event.preventDefault();
+    var jugada1 = $('#jugada1').val();
+    $('#formJugada1').hide(); // Oculta el formulario del primer jugador
+    $('#nombreJugador1').text(nombreJugador1); // Muestra la jugada del primer jugador
+    $('#nombreJugador2').show(); // Muestra el segundo jugador
+    jugador1RealizoJugada = true; // Marcar que el jugador 1 ha realizado su jugada
+    $('#btnJugar2').prop('disabled', false); // Habilitar botón Jugar del jugador 2
+});
+
+   $('#formJugada2').submit(function (event) {
+    event.preventDefault();
+    if (!jugador1RealizoJugada) {
+        // Si el jugador 1 no ha realizado su jugada, no se permite la jugada del jugador 2
+        alert('El jugador 1 debe realizar su jugada primero');
+        return;
+    }
+    var jugada2 = $('#jugada2').val();
+    var ganador = determinarGanador($('#jugada1').val(), jugada2);
+    mostrarResultado(ganador);
+    $('#formJugada2').hide(); // Oculta el formulario del segundo jugador
+    $('#resultadoJuego').show(); // Muestra el resultado del juego
+    actualizarPuntaje(ganador);
+    mostrarPuntaje();
+});
+
+function determinarGanador(jugada1, jugada2) {
+    if (jugada1 === jugada2) {
+        return 'Empate';
+    } else if ((jugada1 === 'Piedra' && jugada2 === 'Tijeras') ||
+        (jugada1 === 'Papel' && jugada2 === 'Piedra') ||
+        (jugada1 === 'Tijeras' && jugada2 === 'Papel')) {
+        return nombreJugador1;
+    } else {
+        return nombreJugador2;
+    }
+}
+
+function mostrarResultado(ganador) {
+    if (ganador === 'Empate') {
+        $('#nombreGanador').text('¡Empate!');
+    } else {
+        var nombreGanador = ganador === nombreJugador1 ? 'Nombre1' : 'Nombre2';
+        $('#' + nombreGanador).text(ganador);
+        var puntaje = $('#' + nombreGanador).data('puntaje') || 0;
+        puntaje++;
+        $('#' + nombreGanador).data('puntaje', puntaje);
+        $('#' + nombreGanador).next().text('Puntaje: ' + puntaje);
+        if (puntaje === 3 && !juegoReiniciado) {
+            mostrarMensajeGanador(ganador);
+            juegoReiniciado = true; // Reiniciar el juego
+        }
+    }
+}
+
+function actualizarPuntaje(ganador) {
+    if (ganador === nombreJugador1) {
+        victoriasJugador1++;
+        if (victoriasJugador1 === 3) {
+            mostrarMensajeGanador(nombreJugador1);
+        }
+    } else if (ganador === nombreJugador2) {
+        victoriasJugador2++;
+        if (victoriasJugador2 === 3) {
+            mostrarMensajeGanador(nombreJugador2);
+        }
+    }
+}
+
+function mostrarPuntaje() {
+    $('#puntajeJugador1').text('Puntaje: ' + victoriasJugador1);
+    $('#puntajeJugador2').text('Puntaje: ' + victoriasJugador2);
+}
+
+function mostrarMensajeGanador(nombreGanador) {
+    $('#resultadoJuego').show();
+    $('#nombreGanador').text('¡' + nombreGanador + ' gana el juego!');
+    $('#formJugada1').hide();
+    $('#formJugada2').hide();
+}
+
+$('#btnReiniciarJuego').click(function () {
+    victoriasJugador1 = 0;
+    victoriasJugador2 = 0;
+    $('#puntajeJugador1').text('Puntaje: 0');
+    $('#puntajeJugador2').text('Puntaje: 0');
+    $('#resultadoJuego').hide();
+    $('#formJugada1').show();
+    $('#formJugada2').show();
+    juegoReiniciado = false; // Reiniciar el juego
+    $('#nombreGanador').text(''); // Reiniciar el nombre del ganador en el HTML
+});
+</script>
